@@ -1,0 +1,36 @@
+# MakeFile by Klaudiusz
+
+# Here add an source files
+SRC := $(shell find src -name *.cpp)
+
+CC = g++
+
+LIBPATH = -Llib/SDL2
+LINKERFLAGS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
+
+INCLUDEPATH = -Iinclude
+
+EXE = bin/prog
+
+COMPILE = ${INCLUDEPATH} ${LIBPATH} -o ${EXE} ${SRC} ${LINKERFLAGS}
+
+MSG_BEGIN = Compiling project!
+MSG_END = Compilation completed!
+
+release:
+	@echo ${MSG_BEGIN}
+	@echo
+
+	${CC} ${COMPILE}
+
+	@echo
+	@echo ${MSG_END}
+
+debug:
+	@echo ${MSG_BEGIN}
+	@echo
+
+	${CC} -g ${COMPILE}
+
+	@echo
+	@echo ${MSG_END}
