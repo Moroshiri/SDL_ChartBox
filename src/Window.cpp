@@ -58,7 +58,7 @@ bool Window::Init(int initFlags)
         _errorCode = ERROR_WINDOW_RENDCREATION;
         return false;
     }
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
+    SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
 
     if(initFlags & WND_INIT_IMAGE)
     {
