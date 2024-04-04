@@ -1,7 +1,7 @@
 #ifndef _ChartBox_hpp_
 #define _ChartBox_hpp_
 #include "IRenderable.hpp"
-#include "Types.hpp"
+#include "Utiles.hpp"
 
 enum ChartType
 {
@@ -45,7 +45,7 @@ public:
     ChartParameters getParameters();
 
     // Render chart box
-    virtual void Render(SDL_Renderer*);
+    virtual void render(SDL_Renderer*);
 
 private:
     void computeParams();

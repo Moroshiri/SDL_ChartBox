@@ -1,11 +1,6 @@
 #include "ChartBox.hpp"
 #include <math.h>
 
-int SDL_SetRenderDrawColor(SDL_Renderer* rend, Color color)
-{
-    return SDL_SetRenderDrawColor(rend, color.r, color.g, color.b, color.a);
-}
-
 ChartBox::ChartBox() : _dataPointsCount(0), _box(CBX_DEFAULT_RECT)
 {
     _dataPoints = nullptr;
@@ -94,7 +89,7 @@ void ChartBox::renderLine(SDL_Renderer* rend)
     SDL_RenderDrawLines(rend, (SDL_Point*)_points, _dataPointsCount);
 }
 
-void ChartBox::Render(SDL_Renderer* rend)
+void ChartBox::render(SDL_Renderer* rend)
 {
     renderBoard(rend);
     renderLine(rend);

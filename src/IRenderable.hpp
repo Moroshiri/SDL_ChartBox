@@ -6,7 +6,7 @@
 class IRenderable
 {
 public:
-    virtual void Render(SDL_Renderer*) = 0;
+    virtual void render(SDL_Renderer*) = 0;
 };
 
 #endif

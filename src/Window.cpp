@@ -1,6 +1,10 @@
 #include "Window.hpp"
 #include "Types.hpp"
 
+// ==================
+// == Constructors ==
+// ==================
+
 Window::Window()
 {
     _screen_width = DEFAULT_SCREEN_WIDTH;
@@ -24,6 +28,10 @@ Window::Window(int width, int height, std::string title) : Window()
 Window::Window(Size size, std::string title) : Window(size.w, size.h, title)
 { }
 
+// ===================
+// == Deconstructor ==
+// ===================
+
 Window::~Window()
 {
     SDL_DestroyRenderer(_renderer);
@@ -32,9 +40,18 @@ Window::~Window()
     delete _renderList;
 }
 
-float Window::ScreenScale = 1;
+// ===================
+// == Static Fields ==
+// ===================
 
-bool Window::Init(int initFlags)
+float Window::screenScale = 1;
+printHandle Window::print = nullptr;
+
+// =============
+// == Methods ==
+// =============
+
+bool Window::init(int initFlags)
 {
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
@@ -73,7 +90,49 @@ bool Window::Init(int initFlags)
     return true;
 }
 
-void Window::AddToRenderList(IRenderable* element)
+void Window::run()
+{
+    _running = true;
+    while(_running)
+    {
+        handleEvents();
+    }
+}
+
+void Window::stop()
+{
+    _running = false;
+}
+
+void Window::handleEvents()
+{
+    SDL_Event e;
+
+    while(SDL_PollEvent(&e) != 0)
+    {
+        switch(e.type)
+        {
+            case SDL_QUIT:
+                stop();
+            break;
+
+            case SDL_KEYDOWN:
+                stop();
+            break;
+
+            default:
+                if (e.type != SDL_MOUSEMOTION && e.type != SDL_MOUSEBUTTONDOWN && e.type != SDL_MOUSEBUTTONUP)
+                {
+                    // char *str = new char[32];
+                    // sprintf(str, "Unhandled event: %d", e.type);
+                    // print(std::string(str));
+                }
+            break;
+        }
+    }
+}
+
+void Window::addToRenderList(IRenderable* element)
 {
     if (_renderListPointer == 0)
     {
@@ -95,8 +154,9 @@ void Window::AddToRenderList(IRenderable* element)
 }
 
 //void Window::Render(SDL_Texture* tex, SDL_Rect* rect)
-void Window::Render()
+void Window::render()
 {
+    SDL_SetRenderDrawColor(_renderer, COLOR_WHITE);
     SDL_RenderClear(_renderer);
 
     // Render entities from the list
@@ -104,7 +164,7 @@ void Window::Render()
     for(uint32_t i = 0; i < _renderListPointer; i++)
     {
         //Print(std::string("renderList ") + toString(i) + std::string(": ") + toString((int)_renderList[i]));
-        _renderList[i]->Render(_renderer);
+        _renderList[i]->render(_renderer);
     }
     // SDL_Rect rect = obj.GetRect();
     // SDL_RenderCopy(_renderer, obj.GetTexture()->GetSDLTexture(), NULL, &rect);
@@ -113,12 +173,16 @@ void Window::Render()
     //SDL_UpdateWindowSurface(_window);
 }
 
-SDL_Renderer* Window::GetRenderer()
+// =================
+// == Get Methods ==
+// =================
+
+SDL_Renderer* Window::getRenderer()
 {
     return _renderer;
 }
 
-Point Window::GetCenter()
+Point Window::getCenter()
 {
     int w, h;
     SDL_GetWindowSizeInPixels(_window, &w, &h);
@@ -128,11 +192,9 @@ Point Window::GetCenter()
     return res;
 }
 
-Size Window::GetSize()
+Size Window::getSize()
 {
     Size res;
     SDL_GetWindowSizeInPixels(_window, &res.w, &res.h);
     return res;
 }
-
-printHandle Window::Print = nullptr;

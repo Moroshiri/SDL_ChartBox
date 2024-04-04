@@ -5,7 +5,7 @@
 #include <string>
 #include "Error.hpp"
 #include "IRenderable.hpp"
-#include "Types.hpp"
+#include "Utiles.hpp"
 
 #define WND_INIT_DEFAULT (0) // Init without SLD_image
 #define WND_INIT_IMAGE (1)  // Init with SDL_image
@@ -25,22 +25,38 @@ public:
     
     ~Window();
 
-    static float ScreenScale;
+    // Value for windo screen scaling
+    static float screenScale;
 
     // Inicjalizuje okno programu i renderer
-    bool Init(int initFlags);
+    bool init(int initFlags);
 
-    //void Render(SDL_Texture* tex, SDL_Rect* rect);
-    void Render();
-    void AddToRenderList(IRenderable* element);
+    // Begins the event handling loop
+    void run();
 
-    SDL_Renderer* GetRenderer();
-    Point GetCenter();
-    Size GetSize();
+    // Stops the event handling loop
+    void stop();
 
-    static printHandle Print;
+    // Render the window
+    void render();
 
+    // Add a reference to IRenderable objects for rendering
+    void addToRenderList(IRenderable* element);
+
+    // Get pointer to SDL_Renderer struct
+    SDL_Renderer* getRenderer();
+
+    // Get center of window
+    Point getCenter();
+
+    // Get size of window
+    Size getSize();
+
+    // Referende to print function
+    static printHandle print;
 private:
+    void handleEvents();
+    
     int _screen_width, _screen_height;
     std::string _window_title;
 
@@ -48,9 +64,9 @@ private:
     uint32_t _renderListPointer;
 
     SDL_Window *_window;
-
     SDL_Renderer *_renderer;
 
+    bool _running;
 };
 
 
