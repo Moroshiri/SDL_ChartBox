@@ -16,15 +16,17 @@ struct ChartParameters
     ChartParameters() : 
         lineColor(COLOR_BLACK), 
         type(CBX_LINEAR), 
-        xMin(0.0), xMax(1.0), 
-        yMin(0.0), yMax(1.0), 
-        grid(true)
+        xMin(0.0), xMax(0.0), 
+        yMin(0.0), yMax(0.0), 
+        grid(true),
+        autoLimits(true)
     { }
     Color lineColor;
     ChartType type;
     float xMin, xMax;
     float yMin, yMax;
     bool grid;
+    bool autoLimits;
 };
 
 const Rect CBX_DEFAULT_RECT = Rect(300, 300, 10, 10);
@@ -33,13 +35,14 @@ class ChartBox : public IRenderable
 {
 public:
     ChartBox();
+    ChartBox(Rect, ChartParameters);
 	~ChartBox();
 
     // Set data points for plot
     void setPoints(FPoint* pts, int count);
 
     // Set chart parameters
-    void setParameters(ChartParameters);
+    Error setParameters(ChartParameters);
 
     // Get chart parameters
     ChartParameters getParameters();
@@ -48,8 +51,18 @@ public:
     virtual void render(SDL_Renderer*);
 
 private:
-    void computeParams();
+    
+    void computeLimits();
     void computePoints();
+    void computeAxes();
+
+    typedef Point(*scaleTypeMethod)(FPoint, ChartBox*);
+    scaleTypeMethod scaleMethod;
+    static Point scaleLinear(FPoint, ChartBox*);
+    static Point scaleSemilogX(FPoint, ChartBox*);
+    static Point scaleSemilogY(FPoint, ChartBox*);
+    static Point scaleLogLog(FPoint, ChartBox*);
+
     void renderBoard(SDL_Renderer*);
     void renderLine(SDL_Renderer*);
 

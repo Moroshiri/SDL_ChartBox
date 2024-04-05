@@ -24,7 +24,11 @@ int main(int argv, char** args)
     Window wnd = Window();
     Window::print = print;
     Error::PrintError = printError;
-    ChartBox chart = ChartBox();
+
+    ChartParameters chartParams = ChartParameters();
+    chartParams.type = CBX_LOGLOG;
+    Rect chartRect = Rect(400, 400, 10, 10);
+    ChartBox chart = ChartBox(chartRect, chartParams);
     
     unsigned int dataCount;
     FPoint* data = loadDataCSV(dataPath, &dataCount);
@@ -45,6 +49,7 @@ int main(int argv, char** args)
     wnd.render();
     wnd.run();
 
+    free(data);
     return 0;
 }
 

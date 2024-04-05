@@ -2,6 +2,8 @@
 #define _Utiles_hpp_
 
 #include "Types.hpp"
+#include "Error.hpp"
+
 /**
 * Loads data from CSV file to FPoint array
 * 
