@@ -57,15 +57,54 @@ Error ChartBox::setParameters(ChartParameters cp)
     return Error();
 }
 
-void ChartBox::setPoints(FPoint* pts, int count)
+void ChartBox::setPoints(FPoint* pts, unsigned int count)
 {
     if(pts != nullptr)
     {
-        _dataPointsCount = count;
-        _dataPoints = pts;
+        _dataPoints = dataReduction(pts, count, &_dataPointsCount);
         computeLimits();
         computePoints();
     }
+}
+
+// ==================
+// == Optimization ==
+// ==================
+
+FPoint* ChartBox::dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out)
+{
+    if(data == nullptr || count_out == nullptr || count_in == 0)
+        return nullptr;
+
+    // No reduction if both dimenstions are higher or equal to data count
+    if(_box.w >= count_in && _box.w >= count_in)
+        return data;
+
+    // Reduction ratio relative to shorter edge, rounded up
+    auto ratio = (unsigned int)std::ceil(std::fmin(count_in / _box.w, count_in / _box.h));
+    auto rest = count_in % ratio;
+
+    auto count = count_in / ratio;
+    FPoint* out = new FPoint[count + (rest > 0)];
+
+    // Averaging method
+    unsigned int n = 0, shift = 0;
+    do
+    {
+        shift = n * ratio;
+        out[n] = mean(data + shift, ratio);
+
+        n++;
+    } while(n < count);
+
+    if(rest > 0)
+    {
+        out[count] = mean(data + shift, rest);
+        count++;
+    }
+    
+    *count_out = count;
+    return out;
 }
 
 // ====================

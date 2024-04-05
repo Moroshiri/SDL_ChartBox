@@ -86,8 +86,33 @@ FPoint* loadDataCSV(const char* file, unsigned int* count)
     return out;
 }
 
-
 int SDL_SetRenderDrawColor(SDL_Renderer* rend, Color color)
 {
     return SDL_SetRenderDrawColor(rend, color.r, color.g, color.b, color.a);
+}
+
+float mean(float* values, unsigned int count)
+{
+    if(values == nullptr || count == 0) return 0.0;
+
+    float sum = 0;
+    for(unsigned int n = 0; n < count; n++)
+        sum += values[n];
+
+    return sum / count;
+}
+
+FPoint mean(FPoint* pts, unsigned int count)
+{
+    if(pts == nullptr || count == 0) return FPoint();
+
+    float xSum = 0;
+    float ySum = 0;
+    for(unsigned int n = 0; n < count; n++)
+    {
+        xSum += pts[n].x;
+        ySum += pts[n].y;
+    }
+
+    return FPoint(xSum / count, ySum / count);
 }

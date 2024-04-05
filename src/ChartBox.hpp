@@ -39,7 +39,7 @@ public:
 	~ChartBox();
 
     // Set data points for plot
-    void setPoints(FPoint* pts, int count);
+    void setPoints(FPoint* pts, unsigned int count);
 
     // Set chart parameters
     Error setParameters(ChartParameters);
@@ -51,7 +51,8 @@ public:
     virtual void render(SDL_Renderer*);
 
 private:
-    
+    FPoint* dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out);
+
     void computeLimits();
     void computePoints();
     void computeAxes();
@@ -68,7 +69,7 @@ private:
 
     Rect _box;
     FPoint* _dataPoints;
-    int _dataPointsCount;
+    unsigned int _dataPointsCount;
     ChartParameters _params;
     
     Point* _axes;
