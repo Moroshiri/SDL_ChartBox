@@ -116,3 +116,43 @@ FPoint mean(FPoint* pts, unsigned int count)
 
     return FPoint(xSum / count, ySum / count);
 }
+
+float min(float* values, unsigned int count)
+{
+    float out = __FLT_MAX__;
+    for(unsigned int n = 0; n < count; n++)
+        if(values[n] < out) out = values[n];
+    return out;
+}
+
+float max(float* values, unsigned int count)
+{
+    float out = __FLT_MIN__;
+    for(unsigned int n = 0; n < count; n++)
+        if(values[n] > out) out = values[n];
+    return out;
+}
+
+FPoint min(FPoint* pts, unsigned int count)
+{
+    float yOut = __FLT_MAX__, xOut = 0.0;
+    for(unsigned int n = 0; n < count; n++)
+        if(pts[n].y < yOut) 
+        {
+            yOut = pts[n].y;
+            xOut = pts[n].x;
+        }
+    return FPoint(xOut, yOut);
+}
+
+FPoint max(FPoint* pts, unsigned int count)
+{
+    float yOut = __FLT_MIN__, xOut = 0.0;
+    for(unsigned int n = 0; n < count; n++)
+        if(pts[n].y > yOut) 
+        {
+            yOut = pts[n].y;
+            xOut = pts[n].x;
+        }
+    return FPoint(xOut, yOut);
+}

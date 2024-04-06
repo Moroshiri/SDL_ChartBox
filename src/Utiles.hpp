@@ -37,5 +37,36 @@ float mean(float* values, unsigned int count);
 */
 FPoint mean(FPoint* pts, unsigned int count);
 
+/**
+ * Minimum of values
+ * \param values Array of values
+ * \param count Count of elements in array
+ * \returns Minimum od values
+*/
+float min(float* values, unsigned int count);
+
+/**
+ * Maximum of values
+ * \param values Array of values
+ * \param count Count of elements in array
+ * \returns Maximum od values
+*/
+float max(float* values, unsigned int count);
+
+/**
+ * Minimum of y values of points in array
+ * \param pts Array of points
+ * \param count Count of element in array
+ * \returns Minimum y value
+*/
+FPoint min(FPoint* pts, unsigned int count);
+
+/**
+ * Maximum of y values of points in array
+ * \param pts Array of points
+ * \param count Count of element in array
+ * \returns Maximum y value
+*/
+FPoint max(FPoint* pts, unsigned int count);
 
 #endif

@@ -1,33 +1,8 @@
 #ifndef _ChartBox_hpp_
 #define _ChartBox_hpp_
 #include "IRenderable.hpp"
-#include "Utiles.hpp"
 
-enum ChartType
-{
-    CBX_LINEAR,
-    CBX_SEMILOG_X,
-    CBX_SEMILOG_Y,
-    CBX_LOGLOG
-};
-
-struct ChartParameters
-{
-    ChartParameters() : 
-        lineColor(COLOR_BLACK), 
-        type(CBX_LINEAR), 
-        xMin(0.0), xMax(0.0), 
-        yMin(0.0), yMax(0.0), 
-        grid(true),
-        autoLimits(true)
-    { }
-    Color lineColor;
-    ChartType type;
-    float xMin, xMax;
-    float yMin, yMax;
-    bool grid;
-    bool autoLimits;
-};
+#include "chartbox/ChartBoxOptimization.hpp"
 
 const Rect CBX_DEFAULT_RECT = Rect(300, 300, 10, 10);
 
@@ -51,8 +26,6 @@ public:
     virtual void render(SDL_Renderer*);
 
 private:
-    FPoint* dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out);
-
     void computeLimits(FPoint* data, unsigned int count);
     void computeLimits();
     void computePoints();
