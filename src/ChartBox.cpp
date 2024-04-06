@@ -1,5 +1,6 @@
 #include "ChartBox.hpp"
 #include <math.h>
+#include <cstdlib>
 
 // ==================
 // == Constructors ==
@@ -61,8 +62,8 @@ void ChartBox::setPoints(FPoint* pts, unsigned int count)
 {
     if(pts != nullptr)
     {
+        computeLimits(pts, count);
         _dataPoints = dataReduction(pts, count, &_dataPointsCount);
-        computeLimits();
         computePoints();
     }
 }
@@ -76,34 +77,84 @@ FPoint* ChartBox::dataReduction(FPoint* data, unsigned int count_in, unsigned in
     if(data == nullptr || count_out == nullptr || count_in == 0)
         return nullptr;
 
-    // No reduction if both dimenstions are higher or equal to data count
-    if(_box.w >= count_in && _box.w >= count_in)
+    // No reduction if box width is higher or equal to data count
+    if(_box.w >= count_in)
         return data;
 
-    // Reduction ratio relative to shorter edge, rounded up
-    auto ratio = (unsigned int)std::ceil(std::fmin(count_in / _box.w, count_in / _box.h));
-    auto rest = count_in % ratio;
-
-    auto count = count_in / ratio;
-    FPoint* out = new FPoint[count + (rest > 0)];
-
-    // Averaging method
-    unsigned int n = 0, shift = 0;
-    do
+    unsigned int count = 0;
+    FPoint* out = nullptr;
+    
+    // -- Linear reduction --
+    if(_params.type == CBX_LINEAR || _params.type == CBX_SEMILOG_Y)
     {
-        shift = n * ratio;
-        out[n] = mean(data + shift, ratio);
+         // Reduction ratio relative to box width, rounded up
+        auto ratio = (unsigned int)std::ceil(count_in / _box.w);
+        auto rest = count_in % ratio;
 
-        n++;
-    } while(n < count);
+        count = count_in / ratio;
+        out = new FPoint[count + (rest > 0)];
 
-    if(rest > 0)
+        // Averaging method
+        unsigned int n = 0, shift = 0;
+        do
+        {
+            shift = n * ratio;
+            out[n] = mean(data + shift, ratio);
+
+            n++;
+        } while(n < count);
+
+        if(rest > 0)
+        {
+            out[count] = mean(data + shift, rest);
+            count++;
+        }
+
+        *count_out = count;
+    }
+
+    // -- Logarithmic reduction --
+    else
     {
-        out[count] = mean(data + shift, rest);
-        count++;
+        count = _box.w;
+        out = new FPoint[count];
+        unsigned int n = 0, nLast = 0, m = 0;
+        int x = 0, xLast = 0;
+        float valueRange = std::log10(_params.xMax - _params.xMin);
+        do
+        {
+            // -- Compute points per pixels --
+
+            // Compute integer of next point coordinate
+            x = data[n].x > 0 ? (int)std::trunc((float)_box.w / valueRange * std::log10(data[n].x)) : 0;
+
+            // If actual x is higher than last x (integer value), count shift relative to last x and average points between them
+            if(x > xLast)
+            {
+                auto shift = n - nLast;
+                if (shift > 1)
+                    out[m] = mean(data + nLast, shift);
+                else
+                    out[m] = data[n];
+
+                nLast = n;
+                xLast = x;
+                m++;
+            }
+
+            n++;
+        } while(n < count_in);
+        
+        if(m < count-1)
+        {
+            auto rest = n - nLast;
+            out[count-1] = mean(data + nLast, rest);
+            m++;
+        }
+
+        *count_out = m;
     }
     
-    *count_out = count;
     return out;
 }
 
@@ -122,8 +173,7 @@ Point ChartBox::scaleLinear(FPoint p, ChartBox* obj)
 Point ChartBox::scaleSemilogX(FPoint p, ChartBox* obj)
 {
     float x, y;
-    //float a = std::log10((float)obj->_params.xMax / p.x);
-    x = (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x;
+    x = p.x > 1 ? (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x : obj->_box.x;
     y = (float)obj->_box.h - (float)obj->_box.h / (obj->_params.yMax - obj->_params.yMin) * p.y + (float)obj->_box.y;
     return Point((int)x, (int)y);
 }
@@ -139,7 +189,7 @@ Point ChartBox::scaleSemilogY(FPoint p, ChartBox* obj)
 Point ChartBox::scaleLogLog(FPoint p, ChartBox* obj)
 {
     float x, y;
-    x = (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x;
+    x = p.x > 1 ? (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x : obj->_box.x;
     y = (float)obj->_box.h - (float)obj->_box.h / std::log10(obj->_params.yMax - obj->_params.yMin) * std::log10(p.y) + (float)obj->_box.y;
     return Point((int)x, (int)y);
 }
@@ -147,6 +197,26 @@ Point ChartBox::scaleLogLog(FPoint p, ChartBox* obj)
 // =============================
 // == Auto Configure Methodes ==
 // =============================
+
+void ChartBox::computeLimits(FPoint* data, unsigned int count)
+{
+    // -- Computing limits --
+    float xMin = 0.0, xMax = 0.0;
+    float yMin = 0.0, yMax = 0.0;
+    for(int n = 0; n < count; n++)
+    {
+        FPoint p = data[n];
+        if(p.x < xMin) xMin = p.x;
+        if(p.x > xMax) xMax = p.x;
+        if(p.y < yMin) yMin = p.y;
+        if(p.y > yMax) yMax = p.y;
+    }
+
+    _params.xMin = xMin;
+    _params.xMax = xMax;
+    _params.yMin = yMin;
+    _params.yMax = yMax;
+}
 
 void ChartBox::computeLimits()
 {
@@ -171,7 +241,6 @@ void ChartBox::computeLimits()
 void ChartBox::computePoints()
 {
     float x, y;
-    // _points = (Point*)malloc(sizeof(Point[_dataPointsCount]));
     _points = new Point[_dataPointsCount];
     for(int n = 0; n < _dataPointsCount; n++)
     {

@@ -53,6 +53,7 @@ public:
 private:
     FPoint* dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out);
 
+    void computeLimits(FPoint* data, unsigned int count);
     void computeLimits();
     void computePoints();
     void computeAxes();
