@@ -3,6 +3,7 @@
 #include "IRenderable.hpp"
 
 #include "chartbox/ChartBoxOptimization.hpp"
+#include "chartbox/ChartBoxScaling.hpp"
 
 const Rect CBX_DEFAULT_RECT = Rect(300, 300, 10, 10);
 
@@ -31,17 +32,12 @@ private:
     void computePoints();
     void computeAxes();
 
-    typedef Point(*scaleTypeMethod)(FPoint, ChartBox*);
+    typedef Point(*scaleTypeMethod)(FPoint, ChartParameters);
     scaleTypeMethod scaleMethod;
-    static Point scaleLinear(FPoint, ChartBox*);
-    static Point scaleSemilogX(FPoint, ChartBox*);
-    static Point scaleSemilogY(FPoint, ChartBox*);
-    static Point scaleLogLog(FPoint, ChartBox*);
 
     void renderBoard(SDL_Renderer*);
     void renderLine(SDL_Renderer*);
 
-    Rect _box;
     FPoint* _dataPoints;
     unsigned int _dataPointsCount;
     ChartParameters _params;

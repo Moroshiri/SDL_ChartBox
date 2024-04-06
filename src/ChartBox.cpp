@@ -8,7 +8,6 @@
 
 ChartBox::ChartBox() : 
         _dataPointsCount(0), 
-        _box(CBX_DEFAULT_RECT),
         _dataPoints(nullptr)
 {
     setParameters(ChartParameters());
@@ -16,8 +15,7 @@ ChartBox::ChartBox() :
 }
 
 ChartBox::ChartBox(Rect rect, ChartParameters params) : 
-        _dataPointsCount(0), 
-        _box(rect),
+        _dataPointsCount(0),
         _dataPoints(nullptr)
 {
     setParameters(params);
@@ -40,19 +38,24 @@ ChartBox::~ChartBox()
 
 Error ChartBox::setParameters(ChartParameters cp)
 {
-    if(cp.autoLimits)
-        computeLimits();
-    else if (cp.xMax < cp.xMin || cp.yMax < cp.yMin)
+    
+    if (cp.xMax < cp.xMin || cp.yMax < cp.yMin && !cp.autoLimits)
         return Error(ERROR_CBX_PARAMETERS, "Max value less than min value");
     
     _params = cp;
 
+    if(cp.autoLimits)
+        computeLimits();
+
+    if(cp.box.w == 0 || cp.box.h == 0)
+        _params.box = CBX_DEFAULT_RECT;
+
     switch(cp.type)
     {
-        case CBX_LINEAR: scaleMethod = scaleLinear; break;
-        case CBX_SEMILOG_X: scaleMethod = scaleSemilogX; break;
-        case CBX_SEMILOG_Y: scaleMethod = scaleSemilogY; break;
-        case CBX_LOGLOG: scaleMethod = scaleLogLog; break;
+        case CBX_LINEAR: scaleMethod = ChartBoxScaling::scaleLinear; break;
+        case CBX_SEMILOG_X: scaleMethod = ChartBoxScaling::scaleSemilogX; break;
+        case CBX_SEMILOG_Y: scaleMethod = ChartBoxScaling::scaleSemilogY; break;
+        case CBX_LOGLOG: scaleMethod = ChartBoxScaling::scaleLogLog; break;
     }
 
     return Error();
@@ -63,45 +66,9 @@ void ChartBox::setPoints(FPoint* pts, unsigned int count)
     if(pts != nullptr)
     {
         computeLimits(pts, count);
-        _dataPoints = ChartBoxOptimizanion::dataReduction(pts, count, &_dataPointsCount, _box, _params);
+        _dataPoints = ChartBoxOptimizanion::dataReduction(pts, count, &_dataPointsCount, _params);
         computePoints();
     }
-}
-
-// ====================
-// == Scale Methodes ==
-// ====================
-
-Point ChartBox::scaleLinear(FPoint p, ChartBox* obj)
-{
-    float x, y;
-    x = (float)obj->_box.w / (obj->_params.xMax - obj->_params.xMin) * p.x + (float)obj->_box.x;
-    y = (float)obj->_box.h - (float)obj->_box.h / (obj->_params.yMax - obj->_params.yMin) * p.y + (float)obj->_box.y;
-    return Point((int)x, (int)y);
-}
-
-Point ChartBox::scaleSemilogX(FPoint p, ChartBox* obj)
-{
-    float x, y;
-    x = p.x > 1 ? (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x : obj->_box.x;
-    y = (float)obj->_box.h - (float)obj->_box.h / (obj->_params.yMax - obj->_params.yMin) * p.y + (float)obj->_box.y;
-    return Point((int)x, (int)y);
-}
-
-Point ChartBox::scaleSemilogY(FPoint p, ChartBox* obj)
-{
-    float x, y;
-    x = (float)obj->_box.w / (obj->_params.xMax - obj->_params.xMin) * p.x + (float)obj->_box.x;
-    y = (float)obj->_box.h - (float)obj->_box.h / std::log10(obj->_params.yMax - obj->_params.yMin) * std::log10(p.y) + (float)obj->_box.y;
-    return Point((int)x, (int)y);
-}
-
-Point ChartBox::scaleLogLog(FPoint p, ChartBox* obj)
-{
-    float x, y;
-    x = p.x > 1 ? (float)obj->_box.w / std::log10(obj->_params.xMax - obj->_params.xMin) * std::log10(p.x) + (float)obj->_box.x : obj->_box.x;
-    y = (float)obj->_box.h - (float)obj->_box.h / std::log10(obj->_params.yMax - obj->_params.yMin) * std::log10(p.y) + (float)obj->_box.y;
-    return Point((int)x, (int)y);
 }
 
 // =============================
@@ -154,7 +121,7 @@ void ChartBox::computePoints()
     _points = new Point[_dataPointsCount];
     for(int n = 0; n < _dataPointsCount; n++)
     {
-        _points[n] = scaleMethod(_dataPoints[n], this);
+        _points[n] = scaleMethod(_dataPoints[n], _params);
     }
 }
 
@@ -162,9 +129,9 @@ void ChartBox::computeAxes()
 {
     // Compute axes points
     Point p1, p2, p3;
-    p1 = Point(_box.x, _box.y);
-    p2 = Point(p1.x, p1.y + _box.h);
-    p3 = Point(p1.x + _box.w, p2.y);
+    p1 = Point(_params.box.x, _params.box.y);
+    p2 = Point(p1.x, p1.y + _params.box.h);
+    p3 = Point(p1.x + _params.box.w, p2.y);
     _axes = new Point[3] {p1, p2, p3};
 }
 

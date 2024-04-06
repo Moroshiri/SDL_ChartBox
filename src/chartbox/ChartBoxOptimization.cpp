@@ -1,13 +1,13 @@
 #include "ChartBoxOptimization.hpp"
 #include <math.h>
 
-FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out, Rect box, ChartParameters params)
+FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out, ChartParameters params)
 {
     if(data == nullptr || count_out == nullptr || count_in == 0)
         return nullptr;
 
-    // No reduction if box width is higher or equal to data count
-    if(box.w >= count_in)
+    // No reduction if params.box width is higher or equal to data count
+    if(params.box.w >= count_in)
         return data;
 
     unsigned int count = 0;
@@ -16,8 +16,8 @@ FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in,
     // -- Linear reduction --
     if(params.type == CBX_LINEAR || params.type == CBX_SEMILOG_Y)
     {
-         // Reduction ratio relative to box width, rounded up
-        auto ratio = (unsigned int)std::ceil(count_in / box.w);
+         // Reduction ratio relative to params.box width, rounded up
+        auto ratio = (unsigned int)std::ceil(count_in / params.box.w);
         auto rest = count_in % ratio;
 
         count = count_in / ratio;
@@ -51,7 +51,7 @@ FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in,
         
         if (params.reducingMethod == CDR_AVERAGE)
         {
-            count = box.w;
+            count = params.box.w;
             out = new FPoint[count];
             
             do
@@ -59,7 +59,7 @@ FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in,
                 // -- Compute points per pixels --
 
                 // Compute integer of next point coordinate
-                x = data[n].x > 0 ? (int)std::trunc((float)box.w / valueRange * std::log10(data[n].x)) : 0;
+                x = data[n].x > 0 ? (int)std::trunc((float)params.box.w / valueRange * std::log10(data[n].x)) : 0;
 
                 // If actual x is higher than last x (integer value), count shift relative to last x and average points between them
                 if(x > xLast)
@@ -88,12 +88,12 @@ FPoint* ChartBoxOptimizanion::dataReduction(FPoint* data, unsigned int count_in,
         
         if (params.reducingMethod == CDR_MINMAX)
         {
-            count = box.w * 1.5;
+            count = params.box.w * 1.5;
             out = new FPoint[count];
 
             do
             {
-                x = data[n].x > 0 ? (int)std::trunc((float)box.w / valueRange * std::log10(data[n].x)) : 0;
+                x = data[n].x > 0 ? (int)std::trunc((float)params.box.w / valueRange * std::log10(data[n].x)) : 0;
 
                 if(x > xLast)
                 {

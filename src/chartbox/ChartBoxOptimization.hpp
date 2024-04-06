@@ -13,10 +13,10 @@ public:
     ChartBoxOptimizanion();
     ~ChartBoxOptimizanion();
 
-    static FPoint* dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out, Rect box, ChartParameters params);
+    static FPoint* dataReduction(FPoint* data, unsigned int count_in, unsigned int* count_out, ChartParameters params);
 
 private:
-    
+
 
 };
 
